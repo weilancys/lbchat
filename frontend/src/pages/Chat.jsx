@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Layout, Input, Button, Avatar, Typography, Dropdown, Badge, Empty, Spin } from 'antd';
+import { Layout, Input, Button, Avatar, Typography, Dropdown, Badge, Empty, Spin, Upload, message } from 'antd';
 import {
     SendOutlined,
     PaperClipOutlined,
@@ -50,6 +50,8 @@ export default function Chat() {
     const [showNewChat, setShowNewChat] = useState(false);
     const [typingTimeout, setTypingTimeout] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     // Connect socket on mount
     useEffect(() => {
@@ -136,6 +138,34 @@ export default function Chat() {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSendMessage();
+        }
+    };
+
+    const handleFileUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file || !activeConversation) return;
+
+        setIsUploading(true);
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const response = await api.post('/files/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            // Send file message via socket
+            sendMessage(activeConversation.id, file.name, 'FILE', response.data.file.id);
+            message.success('File uploaded successfully');
+        } catch (error) {
+            console.error('Error uploading file:', error);
+            message.error('Failed to upload file');
+        } finally {
+            setIsUploading(false);
+            // Reset input
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
         }
     };
 
@@ -328,10 +358,19 @@ export default function Chat() {
 
                         {/* Message Input */}
                         <div style={styles.inputContainer}>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleFileUpload}
+                                style={{ display: 'none' }}
+                                accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.txt,.zip"
+                            />
                             <Button
                                 type="text"
                                 icon={<PaperClipOutlined />}
                                 style={styles.attachBtn}
+                                onClick={() => fileInputRef.current?.click()}
+                                loading={isUploading}
                             />
                             <Input.TextArea
                                 value={messageInput}
