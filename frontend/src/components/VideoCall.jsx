@@ -25,6 +25,7 @@ export default function VideoCall() {
 
     const localVideoRef = useRef(null);
     const remoteVideoRef = useRef(null);
+    const remoteAudioRef = useRef(null);
 
     // Set up video streams
     useEffect(() => {
@@ -37,10 +38,22 @@ export default function VideoCall() {
         if (remoteVideoRef.current && remoteStream) {
             remoteVideoRef.current.srcObject = remoteStream;
         }
+        // Also set audio for video calls (audio track is in the stream)
+        if (remoteAudioRef.current && remoteStream) {
+            remoteAudioRef.current.srcObject = remoteStream;
+        }
     }, [remoteStream]);
 
     return (
         <div style={styles.overlay}>
+            {/* Hidden audio element for playing remote audio in all call types */}
+            <audio
+                ref={remoteAudioRef}
+                autoPlay
+                playsInline
+                style={{ display: 'none' }}
+            />
+
             {/* Remote Video / Audio */}
             <div style={styles.remoteContainer}>
                 {callType === 'video' && remoteStream ? (
