@@ -8,45 +8,45 @@
   --color-bg-secondary: #1a1a2e;
   --color-bg-tertiary: #252542;
   --color-bg-elevated: #2a2a4a;
-  
+
   --color-accent: #6366f1;
   --color-accent-hover: #818cf8;
   --color-accent-light: rgba(99, 102, 241, 0.15);
-  
+
   --color-success: #22c55e;
   --color-warning: #f59e0b;
   --color-error: #ef4444;
-  
+
   --color-text-primary: #f4f4f5;
   --color-text-secondary: #a1a1aa;
   --color-text-muted: #71717a;
-  
+
   --color-border: rgba(255, 255, 255, 0.08);
   --color-border-hover: rgba(255, 255, 255, 0.15);
-  
+
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   --gradient-bg: linear-gradient(180deg, #0f0f1a 0%, #1a1a2e 100%);
-  
+
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
   --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
   --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.3);
-  
+
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
-  
+
   /* Border Radius */
   --radius-sm: 6px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-full: 9999px;
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
@@ -118,8 +118,13 @@ a:hover {
 
 /* Animations */
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideUp {
@@ -127,6 +132,7 @@ a:hover {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -134,13 +140,25 @@ a:hover {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.5;
+  }
 }
 
 @keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .fade-in {
@@ -306,18 +324,72 @@ a:hover {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .sidebar {
-    position: fixed;
-    left: -320px;
+
+  /* Hide sidebar by default on mobile */
+  .ant-layout-sider {
+    position: fixed !important;
+    left: -100% !important;
     z-index: 100;
+    height: 100vh !important;
     transition: left var(--transition-normal);
   }
-  
-  .sidebar.open {
-    left: 0;
+
+  .ant-layout-sider.mobile-open {
+    left: 0 !important;
   }
-  
+
+  /* Mobile overlay when sidebar is open */
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+  }
+
+  /* Mobile header with menu button */
+  .mobile-header {
+    display: flex !important;
+    align-items: center;
+    padding: 12px 16px;
+    background: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .mobile-menu-btn {
+    margin-right: 12px;
+  }
+
+  /* Content takes full width on mobile */
+  .ant-layout-content {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
   .message {
     max-width: 85%;
+  }
+
+  /* Smaller avatars on mobile */
+  .ant-avatar {
+    width: 36px !important;
+    height: 36px !important;
+    font-size: 14px !important;
+  }
+
+  /* Adjust input area on mobile */
+  .chat-input-container,
+  [style*="inputContainer"] {
+    padding: 8px 12px;
+  }
+}
+
+/* Desktop: hide mobile elements */
+@media (min-width: 769px) {
+  .mobile-header {
+    display: none !important;
+  }
+
+  .mobile-overlay {
+    display: none !important;
   }
 }

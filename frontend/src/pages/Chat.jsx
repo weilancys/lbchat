@@ -10,7 +10,9 @@ import {
     SearchOutlined,
     LogoutOutlined,
     UserOutlined,
-    PlusOutlined
+    PlusOutlined,
+    MenuOutlined,
+    ArrowLeftOutlined
 } from '@ant-design/icons';
 import { useAuthStore } from '../store/authStore';
 import { useChatStore } from '../store/chatStore';
@@ -47,6 +49,7 @@ export default function Chat() {
     const [isSending, setIsSending] = useState(false);
     const [showNewChat, setShowNewChat] = useState(false);
     const [typingTimeout, setTypingTimeout] = useState(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Connect socket on mount
     useEffect(() => {
@@ -205,8 +208,20 @@ export default function Chat() {
 
     return (
         <Layout style={styles.layout}>
+            {/* Mobile Overlay */}
+            {sidebarOpen && (
+                <div
+                    className="mobile-overlay"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
             {/* Sidebar */}
-            <Sider width={320} style={styles.sider}>
+            <Sider
+                width={320}
+                style={styles.sider}
+                className={sidebarOpen ? 'mobile-open' : ''}
+            >
                 {/* User Header */}
                 <div style={styles.userHeader}>
                     <div style={styles.userInfo}>
@@ -245,12 +260,28 @@ export default function Chat() {
                     conversations={conversations}
                     activeId={activeConversation?.id}
                     currentUserId={user?.id}
-                    onSelect={(conv) => navigate(`/chat/${conv.id}`)}
+                    onSelect={(conv) => {
+                        navigate(`/chat/${conv.id}`);
+                        setSidebarOpen(false);
+                    }}
                 />
             </Sider>
 
             {/* Main Content */}
             <Content style={styles.content}>
+                {/* Mobile Header */}
+                <div className="mobile-header">
+                    <Button
+                        type="text"
+                        icon={<MenuOutlined />}
+                        onClick={() => setSidebarOpen(true)}
+                        className="mobile-menu-btn"
+                    />
+                    <Text strong style={{ flex: 1 }}>
+                        {activeConversation ? getConversationName() : 'LBChat'}
+                    </Text>
+                </div>
+
                 {activeConversation ? (
                     <>
                         {/* Chat Header */}
