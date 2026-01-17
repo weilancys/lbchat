@@ -36,3 +36,4 @@ backend/prisma/migrations/*.sql
 
 # Coturn config with secrets
 coturn/turnserver.conf
+deploy/
