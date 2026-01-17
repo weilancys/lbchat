@@ -43,16 +43,32 @@ app.get('/api/health', (req, res) => {
 
 // TURN server credentials for WebRTC
 app.get('/api/turn', (req, res) => {
+    const turnHost = process.env.TURN_SERVER_URL?.replace('turn:', '') || '';
+    const turnUser = process.env.TURN_USERNAME || '';
+    const turnPass = process.env.TURN_PASSWORD || '';
+
+    const iceServers = [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' }
+    ];
+
+    // Add TURN servers with multiple transports if configured
+    if (turnHost && turnUser && turnPass) {
+        iceServers.push({
+            urls: [
+                `turn:${turnHost}?transport=udp`,
+                `turn:${turnHost}?transport=tcp`,
+                `turns:${turnHost}:5349?transport=tcp`
+            ],
+            username: turnUser,
+            credential: turnPass
+        });
+    }
+
     res.json({
-        iceServers: [
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            ...(process.env.TURN_SERVER_URL ? [{
-                urls: process.env.TURN_SERVER_URL,
-                username: process.env.TURN_USERNAME,
-                credential: process.env.TURN_PASSWORD
-            }] : [])
-        ]
+        iceServers,
+        // Force relay mode if direct connections are failing
+        // iceTransportPolicy: 'relay'
     });
 });
 
