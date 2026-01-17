@@ -132,10 +132,12 @@ MINIO_USE_SSL=false
 MAX_FILE_SIZE=52428800
 MAX_IMAGE_SIZE=10485760
 
-# TURN Server - REPLACE WITH YOUR SERVER'S PUBLIC IP
+# TURN Server (WebRTC) - IMPORTANT for video calls
+# Replace YOUR_SERVER_PUBLIC_IP with your actual VPS public IP
+# The password MUST match what's in coturn/turnserver.conf
 TURN_SERVER_URL=turn:YOUR_SERVER_PUBLIC_IP:3478
 TURN_USERNAME=lbchat
-TURN_PASSWORD=GENERATE_A_STRONG_PASSWORD_HERE
+TURN_PASSWORD=change_this_turn_password
 
 # Push Notifications (generate with: npx web-push generate-vapid-keys)
 VAPID_PUBLIC_KEY=your_vapid_public_key
@@ -155,22 +157,19 @@ cp coturn/turnserver.conf.example coturn/turnserver.conf
 nano coturn/turnserver.conf
 ```
 
-Update these settings:
+Update these settings (must match your .env):
 ```conf
-# Use your domain or public IP
-realm=chat.yourdomain.com
+# Use your domain (same as DOMAIN in .env)
+realm=yourname.duckdns.org
 
-# External IP (your server's public IP)
+# REQUIRED: Uncomment and set your server's public IP
 external-ip=YOUR_SERVER_PUBLIC_IP
 
-# Match credentials in .env
-user=lbchat:YOUR_TURN_PASSWORD
-
-# For production, enable TLS
-# tls-listening-port=5349
-# cert=/etc/letsencrypt/live/yourdomain.com/fullchain.pem
-# pkey=/etc/letsencrypt/live/yourdomain.com/privkey.pem
+# REQUIRED: Password must match TURN_PASSWORD in .env
+user=lbchat:change_this_turn_password
 ```
+
+> **Important**: The password in `turnserver.conf` (`user=lbchat:PASSWORD`) must exactly match `TURN_PASSWORD` in your `.env` file!
 
 ### 3.4 Configure SSL with Let's Encrypt
 

@@ -1,5 +1,12 @@
+# =============================================================================
 # Coturn TURN Server Configuration
-# This is a template - copy to coturn/turnserver.conf and edit
+# =============================================================================
+# SETUP INSTRUCTIONS:
+# 1. Copy this file: cp turnserver.conf.example turnserver.conf
+# 2. Replace YOUR_DOMAIN with your domain (e.g., yourname.duckdns.org)
+# 3. Replace YOUR_SERVER_PUBLIC_IP with your VPS's public IP
+# 4. Replace YOUR_TURN_PASSWORD - must match TURN_PASSWORD in .env
+# =============================================================================
 
 # Network settings
 listening-port=3478
@@ -11,11 +18,16 @@ fingerprint
 # Long-term credential mechanism
 lt-cred-mech
 
-# Realm (use your domain)
-realm=lbchat.local
+# Realm - use your domain
+realm=YOUR_DOMAIN
+
+# External IP - REQUIRED for VPS deployment
+# Replace with your server's public IP address
+# external-ip=YOUR_SERVER_PUBLIC_IP
 
 # Authentication
-user=lbchat:your_turn_password_here
+# The password here MUST match TURN_PASSWORD in your .env file
+user=lbchat:change_this_turn_password
 
 # Logging
 log-file=/var/log/turnserver.log
@@ -30,7 +42,7 @@ total-quota=100
 bps-capacity=0
 stale-nonce=600
 
-# Allow localhost for development
+# Allowed peer IPs (private networks)
 allowed-peer-ip=10.0.0.0-10.255.255.255
 allowed-peer-ip=172.16.0.0-172.31.255.255
 allowed-peer-ip=192.168.0.0-192.168.255.255
