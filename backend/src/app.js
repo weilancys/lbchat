@@ -54,11 +54,15 @@ app.get('/api/turn', (req, res) => {
 
     // Add TURN servers with multiple transports if configured
     if (turnHost && turnUser && turnPass) {
+        // Extract just the host:port from turnHost
+        const hostPort = turnHost.split('?')[0]; // Remove any query params
+        const host = hostPort.split(':')[0]; // Just the IP/hostname
+        const port = hostPort.split(':')[1] || '3478';
+
         iceServers.push({
             urls: [
-                `turn:${turnHost}?transport=udp`,
-                `turn:${turnHost}?transport=tcp`,
-                `turns:${turnHost}:5349?transport=tcp`
+                `turn:${host}:${port}?transport=udp`,
+                `turn:${host}:${port}?transport=tcp`
             ],
             username: turnUser,
             credential: turnPass
