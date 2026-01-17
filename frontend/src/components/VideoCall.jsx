@@ -41,6 +41,13 @@ export default function VideoCall() {
         // Also set audio for video calls (audio track is in the stream)
         if (remoteAudioRef.current && remoteStream) {
             remoteAudioRef.current.srcObject = remoteStream;
+            // Explicitly try to play audio to handle autoplay policy
+            const playPromise = remoteAudioRef.current.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.warn('Audio autoplay blocked, will play on user interaction:', error);
+                });
+            }
         }
     }, [remoteStream]);
 
