@@ -41,6 +41,21 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// TURN server credentials for WebRTC
+app.get('/api/turn', (req, res) => {
+    res.json({
+        iceServers: [
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            ...(process.env.TURN_SERVER_URL ? [{
+                urls: process.env.TURN_SERVER_URL,
+                username: process.env.TURN_USERNAME,
+                credential: process.env.TURN_PASSWORD
+            }] : [])
+        ]
+    });
+});
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);

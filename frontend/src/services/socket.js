@@ -6,6 +6,8 @@ import { useCallStore } from '../store/callStore';
 const WS_URL = import.meta.env.VITE_WS_URL || '';
 
 let socket = null;
+let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
 
 export const connectSocket = () => {
     const token = useAuthStore.getState().accessToken;
@@ -19,17 +21,50 @@ export const connectSocket = () => {
         return socket;
     }
 
+    // Disconnect existing socket if any
+    if (socket) {
+        socket.disconnect();
+    }
+
     socket = io(WS_URL, {
         auth: { token },
-        transports: ['websocket', 'polling']
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionAttempts: MAX_RECONNECT_ATTEMPTS,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000
     });
 
     socket.on('connect', () => {
         console.log('Socket connected');
+        reconnectAttempts = 0;
     });
 
     socket.on('disconnect', (reason) => {
         console.log('Socket disconnected:', reason);
+    });
+
+    socket.on('connect_error', async (error) => {
+        console.error('Socket connection error:', error.message);
+
+        // If authentication error, try to refresh token and reconnect
+        if (error.message === 'Invalid token' || error.message === 'Authentication required') {
+            reconnectAttempts++;
+
+            if (reconnectAttempts <= MAX_RECONNECT_ATTEMPTS) {
+                console.log('Attempting token refresh and reconnect...');
+                const refreshed = await useAuthStore.getState().refreshAccessToken();
+
+                if (refreshed) {
+                    // Reconnect with new token
+                    socket.auth.token = useAuthStore.getState().accessToken;
+                    socket.connect();
+                } else {
+                    console.error('Token refresh failed, logging out');
+                    useAuthStore.getState().logout();
+                }
+            }
+        }
     });
 
     socket.on('error', (error) => {
@@ -65,7 +100,6 @@ export const connectSocket = () => {
     });
 
     socket.on('call:answered', ({ userId, answer }) => {
-        // Handle in WebRTC service
         window.dispatchEvent(new CustomEvent('call:answered', { detail: { userId, answer } }));
     });
 
@@ -89,13 +123,33 @@ export const disconnectSocket = () => {
         socket.disconnect();
         socket = null;
     }
+    reconnectAttempts = 0;
 };
 
 export const getSocket = () => socket;
 
+// Reconnect with fresh token (call after token refresh)
+export const reconnectSocket = () => {
+    if (socket) {
+        const token = useAuthStore.getState().accessToken;
+        if (token) {
+            socket.auth.token = token;
+            if (!socket.connected) {
+                socket.connect();
+            }
+        }
+    }
+};
+
 // Helper functions
 export const sendMessage = (conversationId, content, type = 'TEXT', fileId = null) => {
-    socket?.emit('message:send', { conversationId, content, type, fileId });
+    if (socket?.connected) {
+        socket.emit('message:send', { conversationId, content, type, fileId });
+    } else {
+        console.error('Socket not connected, cannot send message');
+        // Try to reconnect
+        reconnectSocket();
+    }
 };
 
 export const startTyping = (conversationId) => {
