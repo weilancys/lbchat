@@ -14,8 +14,14 @@ const getIceServers = async () => {
 
     try {
         const response = await api.get('/turn');
-        cachedIceServers = response.data;
+        // Add iceTransportPolicy to force TURN relay (helps with problematic NATs)
+        cachedIceServers = {
+            ...response.data,
+            // Uncomment below to force relay-only mode (disables direct peer-to-peer)
+            // iceTransportPolicy: 'relay'
+        };
         console.log('ICE servers loaded:', cachedIceServers.iceServers.length, 'servers');
+        console.log('ICE config:', JSON.stringify(cachedIceServers, null, 2));
         return cachedIceServers;
     } catch (error) {
         console.error('Failed to fetch ICE servers, using defaults:', error);
@@ -126,7 +132,18 @@ export const initiateCall = async (targetUser, callType) => {
 
         // Handle remote tracks
         peerConnection.ontrack = (event) => {
-            console.log('Received remote track:', event.track.kind);
+            console.log('Received remote track:', event.track.kind, 'enabled:', event.track.enabled);
+            console.log('Remote stream tracks:', event.streams[0]?.getTracks().map(t => `${t.kind}:${t.enabled}`));
+
+            const remoteStream = event.streams[0];
+            if (remoteStream) {
+                const audioTracks = remoteStream.getAudioTracks();
+                console.log('Audio tracks in stream:', audioTracks.length);
+                audioTracks.forEach((track, i) => {
+                    console.log(`Audio track ${i}: enabled=${track.enabled}, muted=${track.muted}, readyState=${track.readyState}`);
+                });
+            }
+
             callStore.setRemoteStream(event.streams[0]);
         };
 
@@ -203,7 +220,18 @@ export const answerCall = async () => {
 
         // Handle remote tracks
         peerConnection.ontrack = (event) => {
-            console.log('Received remote track:', event.track.kind);
+            console.log('Received remote track:', event.track.kind, 'enabled:', event.track.enabled);
+            console.log('Remote stream tracks:', event.streams[0]?.getTracks().map(t => `${t.kind}:${t.enabled}`));
+
+            const remoteStream = event.streams[0];
+            if (remoteStream) {
+                const audioTracks = remoteStream.getAudioTracks();
+                console.log('Audio tracks in stream:', audioTracks.length);
+                audioTracks.forEach((track, i) => {
+                    console.log(`Audio track ${i}: enabled=${track.enabled}, muted=${track.muted}, readyState=${track.readyState}`);
+                });
+            }
+
             callStore.setRemoteStream(event.streams[0]);
         };
 
